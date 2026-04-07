@@ -12,7 +12,7 @@ const register = async (data: IAuthRegisterInput) => {
   const { displayname, email, password } = await validateInputWithZod(AuthRegisterZodSchema, data); // reassign parsed values to them
 
   const existingUser = await UserModel.findOne({ email });
-
+  
   if (existingUser) {
     throw new HTTPException(409, { message: `User with email: ${email} already exists` });
   }
@@ -20,7 +20,17 @@ const register = async (data: IAuthRegisterInput) => {
   const hashedPassword = await Bun.password.hash(password);
   const createdUser = await UserModel.create({ email, password: hashedPassword, displayname });
 
-  return { message: `User with displayname: ${createdUser.displayname} created successfully` };
+  const accessToken = await sign({
+    userId: createdUser._id,
+    exp: getExp1Hour()
+  }, process.env.JWT_ACCESS_SECRET as string);
+
+  const refreshToken = await sign({
+    userId: createdUser._id,
+    exp: getExp7Days()
+  }, process.env.JWT_REFRESH_SECRET as string);
+
+  return { message: "Successfully signed in user", accessToken, refreshToken };
 };
 
 const login = async (data: IAuthLoginInput) => {
@@ -48,7 +58,7 @@ const login = async (data: IAuthLoginInput) => {
     exp: getExp7Days()
   }, process.env.JWT_REFRESH_SECRET as string);
 
-  return { message: { accessToken, refreshToken } };
+  return { message: "Successfully logged in user", accessToken, refreshToken };
 };
 
 const refresh = async (data: IAuthRefreshInput) => {
@@ -67,7 +77,7 @@ const refresh = async (data: IAuthRefreshInput) => {
       exp: getExp7Days()
     }, process.env.JWT_REFRESH_SECRET as string);
 
-    return { message: { accessToken: newAccessToken, refreshToken: newRefreshToken } };
+    return { message: "Successfully logged in user", accessToken: newAccessToken, refreshToken: newRefreshToken };
   } catch (err) {
     throw new HTTPException(401, { message: "Unauthorized: Invalid or Expired token" });
   }
