@@ -1,8 +1,11 @@
-import { IAuthVariables } from "@/types/middleware/IAuthVariables";
 import { getCookie } from "hono/cookie";
 import { createMiddleware } from "hono/factory";
 import { HTTPException } from "hono/http-exception";
 import { verify } from "hono/jwt";
+
+interface IAuthVariables {
+  user_id: string;
+};
 
 const authMiddleware = createMiddleware<{ Variables: IAuthVariables; }>(async (c, next) => {
   const token = getCookie(c, "accessToken");
@@ -13,11 +16,9 @@ const authMiddleware = createMiddleware<{ Variables: IAuthVariables; }>(async (c
 
   try {
     const payload = await verify(token, process.env.JWT_ACCESS_SECRET as string, "HS256") as { userId: string; };
-
-    // sets user_id in hono's context other routes can access it using c.get("user_id")
-    c.set("user_id", payload.userId); 
-    
+    c.set("user_id", payload.userId); // sets user_id in hono's context, access with c.get("user_id")
     await next();
+
   } catch (err) {
     throw new HTTPException(401, { message: "Unauthorized: Invalid or Expired token" });
   }
