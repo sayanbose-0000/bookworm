@@ -1,8 +1,13 @@
-import authApp from '@/routes/user/AuthRoute';
+import authApp from '@/controller/user/AuthController';
 import { Hono } from 'hono';
 import mongoose from 'mongoose';
+// import { config } from 'dotenv';
+
+// config();
 
 const server = new Hono();
+
+console.log(process.env.MONGO_URI);
 
 mongoose.connect(process.env.MONGO_URI as string)
   .then(() => {
