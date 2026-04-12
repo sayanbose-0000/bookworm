@@ -15,13 +15,14 @@ const getExp = (time: "1h" | "7d") => {
 const createJwt = async (data: ICreateJwt) => {
   const { userId, typeOfToken } = data;
 
+  const secret = typeOfToken === "accessToken" 
+    ? (Bun.env.JWT_ACCESS_SECRET || "")
+    : (Bun.env.JWT_REFRESH_SECRET || "");
+
   const token = await sign({
     userId: userId,
     exp: typeOfToken === "accessToken" ? getExp("1h") : getExp("7d")
-  }, typeOfToken === "accessToken" ?
-    Bun.env.JWT_ACCESS_SECRET as string :
-    Bun.env.JWT_REFRESH_SECRET as string
-  );
+  }, secret);
 
   return token;
 };

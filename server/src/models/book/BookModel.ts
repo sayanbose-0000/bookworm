@@ -7,6 +7,7 @@ const bookSchemaDef = {
     type: Types.ObjectId,
     required: [true, "User Id is required for uploading book"],
   },
+
   storage_url: {
     type: String,
     required: [true, "Storage url is needed to upload a book"],
@@ -26,11 +27,19 @@ const bookSchemaDef = {
         type: String,
         required: [true, "Cover url of book is required"],
       },
-    }),
+    }, { _id: false }), // don't need id for internal one
   },
 } satisfies SchemaDefinition<IBookSchema>;
 
-const BookSchema = new Schema(bookSchemaDef, {timestamps: true});
+const BookSchema = new Schema(bookSchemaDef, {
+  timestamps: true,
+  toJSON: {
+    transform(doc, ret) {
+      const { _id, __v, ...rest } = ret;
+      return { id: _id, ...rest };
+    }
+  }
+});
 
 const BookModel: Model<IBookSchema> = (
   models["_bookworm_books"] as Model<IBookSchema> ||

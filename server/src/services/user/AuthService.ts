@@ -20,7 +20,7 @@ const register = async (data: IAuthRegisterInput) => {
   const accessToken = await createJwt({ userId: createdUser._id, typeOfToken: "accessToken" });
   const refreshToken = await createJwt({ userId: createdUser._id, typeOfToken: "refreshToken" });
 
-  return { message: "Successfully signed in user", accessToken, refreshToken };
+  return { message: "Successfully signed in user", user: createdUser, accessToken, refreshToken };
 };
 
 const login = async (data: IAuthLoginInput) => {
@@ -35,7 +35,7 @@ const login = async (data: IAuthLoginInput) => {
   const accessToken = await createJwt({ userId: user._id, typeOfToken: "accessToken" });
   const refreshToken = await createJwt({ userId: user._id, typeOfToken: "refreshToken" });
 
-  return { message: "Successfully logged in user", accessToken, refreshToken };
+  return { message: "Successfully logged in user", user, accessToken, refreshToken };
 };
 
 const refresh = async (data: IAuthRefreshInput) => {
@@ -51,7 +51,7 @@ const refresh = async (data: IAuthRefreshInput) => {
 
     return { message: "Successfully refreshed token", accessToken: newAccessToken, refreshToken: newRefreshToken };
   } catch (err) {
-    throw new HTTPException(401, { message: "Unauthorized: Invalid or Expired token" });
+    throw new HTTPException(401, { message: "Unauthorized: Invalid or Expired token", });
   }
 };
 
