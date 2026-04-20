@@ -1,5 +1,5 @@
 import { setCookiesInBrowser } from "@/helper/auth/setCookie";
-import { login, refresh, register } from "@/services/user/AuthService";
+import { login, refresh, register } from "@/services/auth/AuthService";
 import { IAuthLoginInput, IAuthRegisterInput } from "@/validations/user/AuthZod";
 import { Hono } from "hono";
 import { getCookie } from "hono/cookie";

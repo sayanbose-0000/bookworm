@@ -30,7 +30,15 @@ const annoteSchemaDef = {
   }
 } satisfies SchemaDefinition<IAnnoteSchema>; // Satiesfies checks that your value matches the type (for autocomplete/validation), but doesn't change the variable's inferred type.
 
-const AnnoteSchema = new Schema(annoteSchemaDef, { timestamps: true });
+const AnnoteSchema = new Schema(annoteSchemaDef, {
+  timestamps: true,
+  toJSON: {
+    transform(doc, ret) {
+      const { _id, __v, ...rest } = ret;
+      return { id: _id, ...rest };
+    }
+  }
+});
 
 const AnnoteModel: Model<IAnnoteSchema> = (
   models["_bookworm_annotations"] as Model<IAnnoteSchema> ||

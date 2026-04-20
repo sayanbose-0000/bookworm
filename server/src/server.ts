@@ -1,39 +1,29 @@
-import authApp from '@/controller/user/AuthController';
+import authApp from '@/controller/auth/AuthController';
 import { authMiddleware } from '@/middleware/AuthMiddleware';
 import { Context, Hono, Next } from 'hono';
-import { HTTPException } from 'hono/http-exception';
 import mongoose from 'mongoose';
+import annoteApp from './controller/annotation/AnnoteController';
 import bookApp from './controller/book/BookController';
+import progressApp from './controller/progress/ProgressController';
+import { userApp } from './controller/user/UserController';
+import { globalErrorHandler } from './error/GlobalErrorHandler';
 
 const server = new Hono();
 
-server.onError((err, c) => {
-  // HTTPException Errors
-  if (err instanceof HTTPException) {
-    return c.json({
-      message: err.message
-    }, err.status);
-  }
-
-  // Generic errors
-  return c.json({
-    message: "Internal Server Error"
-  }, 500);
-});
+// Global error handler i,plemented
+server.onError(globalErrorHandler);
 
 const mongoUri = Bun.env.MONGO_URI || "";
-mongoose.connect(mongoUri).then(() => {
-  console.log("Connected to MongoDB");
-}).catch(err => {
-  console.log("Failed to connect to mongodb", err);
-});
 
-server.get("/", (c) => {
-  return c.json({ message: "Welcome to Bookworm" });
-});
+mongoose.connect(mongoUri)
+  .then(() => {
+    console.log("Connected to MongoDB");
+  }).catch(err => {
+    console.log("Failed to connect to mongodb", err);
+  });
 
-// Middleware
-// server.use("*", authMiddleware);
+
+// Middleware implemented
 server.use("*", async (c: Context, next: Next) => {
   if (c.req.path.startsWith("/auth")) {
     return next();
@@ -42,9 +32,14 @@ server.use("*", async (c: Context, next: Next) => {
   return authMiddleware(c, next);
 });
 
+server.get("/", (c) => {
+  return c.json({ message: "Welcome to Bookworm" });
+});
+
 server.route("/auth", authApp);
 server.route("/books", bookApp);
-// app.route("/annotation")
-// app.route("/progress")
+server.route("/user", userApp);
+server.route("/annote", annoteApp);
+server.route("/progress", progressApp);
 
 export default server;

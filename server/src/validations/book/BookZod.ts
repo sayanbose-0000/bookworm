@@ -28,8 +28,12 @@ const BookCreateZodSchema = zod.object({
       // not checking if cover image is provided or not as many epubs don't have it
       zod.refine((file: File) => file?.size <= 25000000, // 25 mb
         { error: "Max file size is 25mb" }),
-      zod.refine((file: File) => file.name.endsWith(".epub") || file.name.endsWith(".jpg") || file.name.endsWith(".jpeg") || file.name.endsWith(".png") || file.name.endsWith(".webp"),
-        { error: "Only epub and image files are allowed" })
+      zod.refine((file: File) => {
+        if (!file) {
+          return true;
+        }
+        return file.name.endsWith(".jpg") || file.name.endsWith(".jpeg") || file.name.endsWith(".png") || file.name.endsWith(".webp");
+      }, { error: "Only image files are allowed" })
     )
 });
 
